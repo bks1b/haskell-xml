@@ -1,0 +1,81 @@
+
+<first>
+  text1
+  < second key1= "val1" prop1 / >
+  <third prop2 key2=val2>
+    text2
+  </third>
+  text3 <!--
+some comment 123
+--></first>
+text4
+< fourth /  >
+<!-- this is a \--> comment -->
+some other text
+\<!-- this is not a comment -->
+<fifth></fifth>
+123 \<this is not an element
+<sixth>text<seventh prop/></sixth>
+<eighth
+multiline
+a=b/>
+
+
+Reserved characters being ignored
+<elem1 key1="val>=1/" prop1>
+  t>e=x/t>1
+  <elem2 key2="val/>=2" prop2>
+    t=e>x/t=2
+  </elem2>
+  <elem3 key3="ab>c\" de>fg=h\" ij=k>"/>
+</elem1>
+<elem1 <elem2>abc></elem1>
+<"this tag name contains a < and > char" prop1 "this key contains < and > and / and ="="123"/>
+
+
+Closing tag attribute
+<elem1>text</elem1 attrib>
+
+
+Unexpected /
+</a/></a>
+
+
+No tag name
+<a=b/>
+
+
+No tag name
+<>
+
+
+No tag name
+</>
+
+
+No tag name
+<//>
+
+
+Unclosed string
+<elem1 key1="value1></elem1>
+
+
+Unclosed string
+<elem1 key1="value1 value2>text</elem1>
+
+
+Unclosed tag
+<test>
+
+
+Unexpected closing
+</test>
+
+
+Unclosed comment
+<!-- test
+
+
+Unexpected /
+<a / b>
