@@ -1,34 +1,32 @@
-module Main where
-
-import System.Directory
-import Data.List
 import Parser
-import Util
 
--- splits a string at each occurrence n newlines
-splitLines :: String -> Int -> [String]
-splitLines x n = case find (\i -> (take n $ drop i x) == (concat $ replicate n "\n")) [0..length x] of
-    Just i -> [t, drop n ts] where [t, ts] = split x i
-    Nothing -> [x, ""]
+import Data.List
+import Data.Maybe (fromJust)
+import Data.Bifunctor (bimap)
+import System.Directory (createDirectoryIfMissing)
 
-splitTests :: String -> [[String]]
-splitTests "" = []
-splitTests x = splitLines t 1 : splitTests ts where [t, ts] = splitLines x 3
+-- splits a string at each occurrence of n newlines
+splitLines :: Int -> String -> (String, String)
+splitLines n = fmap (drop n) . fromJust
+    . find (liftA2 (||) null (isPrefixOf $ replicate n '\n') . snd)
+    . (zip . inits <*> tails)
 
-runTest :: String -> String -> Int -> IO ()
-runTest name str i = do
-    putStrLn $ "Parsing test #" ++ (show i) ++ ": " ++ name
-    case parse str of
-        Right r -> putStrLn $ concat $ map show r
-        Left l -> putStrLn l
-    putStrLn ""
+splitTests :: String -> [(String, String)]
+splitTests [] = []
+splitTests x = uncurry (:) $ bimap (splitLines 1) splitTests $ splitLines 3 x
 
-main = do
-    file <- readFile "tests.txt"
-    let tests = splitTests file
-    let added = map (\t -> (tests !! 0 !! 1) ++ "\n\n" ++ (t !! 1)) tests
-    createDirectoryIfMissing False "tests"
-    sequence [
-        writeFile ("tests/" ++ (show i) ++ ".xml") (added !! i)
-        >> runTest (tests !! i !! 0) (added !! i) i
-        | i <- [1..length tests - 1]]
+writeTest :: Int -> String -> IO ()
+writeTest = writeFile . ("tests/" ++) . (++ ".xml") . show 
+
+runTest :: (Int, (String, String)) -> IO ()
+runTest (i, (desc, str)) = mapM_ putStrLn [
+    "Parsing test #" ++ show i ++ ": " ++ desc,
+    either id (concatMap show) $ parse str,
+    ""]
+
+main = createDirectoryIfMissing False "tests"
+    >> readFile "tests.txt"
+    >>= uncurry (\(_, pref) -> mapM_ (
+        liftA2 (>>) (uncurry writeTest . fmap snd) runTest
+            . fmap (fmap $ (pref ++) . ("\n\n" ++)))
+            . zip [1..]) . fromJust . uncons . splitTests

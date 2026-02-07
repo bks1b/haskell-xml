@@ -1,0 +1,5 @@
+- ignore: {name: "Use infix"}
+- ignore: {name: "Use section"}
+- ignore: {name: "Use <$>"}
+- ignore: {name: "Use head"}
+- ignore: {name: "Redundant fmap"}
